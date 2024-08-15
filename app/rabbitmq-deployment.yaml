@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: rabbitmq-statefulset
+  labels:
+    author: hari
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      service: rabbitmq
+  template:
+    metadata:
+      name: rabbitmq
+      labels:
+        service: rabbitmq
+    spec:
+      serviceAccountName: my-sa
+      volumes:
+        - name: rabbitmq-creds
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: rabbitmq-aws-secret
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:1.0   
+        ports:
+        - containerPort: 5672
+        - containerPort: 15672     
+        volumeMounts:
+          - name: rabbitmq-volume
+            mountPath: /data/db  
+          - name: rabbitmq-creds
+            monthPath: /tmp          
+  volumeClaimTemplates:
+    - metadata:
+        name: rabbitmq-volume
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi            
