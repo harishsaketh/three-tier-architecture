@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    tier: backend
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      name: backend
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: private-registry/backend-app:1.0   
+        ports:
+        - containerPort: 8080
+        envFrom:
+         - configMapRef:
+              name: backend-service-configmap
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2000Mi 
