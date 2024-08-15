@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb-statefulset
+  labels:
+    tier: db
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      service: mongodb
+  template:
+    metadata:
+      name: mongodb
+      labels:
+        service: mongodb
+    spec:
+      serviceAccountName: my-sa
+      volumes:
+        - name: mongodb-creds
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: mongodb-aws-secret
+      containers:
+      - name: mongodb
+        image: private-registry/mongodb-app:1.0   
+        ports:
+        - containerPort: 27017
+        env:
+          - name: MONGODB_USERNAME
+            valueFrom:
+              configMapKeyRef:
+                key: username
+                name: mongodb-config
+          - name: MONGODB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: password
+                name: mongodb-secret      
+        volumeMounts:
+          - name: mongo-volume
+            mountPath: /data/db  
+          - name: mongodb-creds
+            monthPath: /tmp          
+  volumeClaimTemplates:
+    - metadata:
+        name: mongo-volume
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi            
