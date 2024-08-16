@@ -5,6 +5,14 @@ metadata:
   labels:
     tier: backend
 spec:
+  serviceAccountName: my-sa
+      volumes:
+        - name: mongodb-creds
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: mongodb-aws-secret
   replicas: 5
   selector:
     matchLabels:
@@ -20,6 +28,9 @@ spec:
         image: private-registry/backend-app:1.0   
         ports:
         - containerPort: 8080
+        volumeMounts:  
+          - name: mongodb-creds
+            monthPath: /tmp 
         envFrom:
          - configMapRef:
               name: backend-service-configmap
