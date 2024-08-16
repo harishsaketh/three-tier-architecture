@@ -15,14 +15,6 @@ spec:
       labels:
         service: mongodb
     spec:
-      serviceAccountName: my-sa
-      volumes:
-        - name: mongodb-creds
-          csi:
-            driver: secrets-store.csi.k8s.io
-            readOnly: true
-            volumeAttributes:
-              secretProviderClass: mongodb-aws-secret
       containers:
       - name: mongodb
         image: private-registry/mongodb-app:1.0   
@@ -30,9 +22,7 @@ spec:
         - containerPort: 27017      
         volumeMounts:
           - name: mongo-volume
-            mountPath: /data/db  
-          - name: mongodb-creds
-            monthPath: /tmp          
+            mountPath: /data/db           
   volumeClaimTemplates:
     - metadata:
         name: mongo-volume
